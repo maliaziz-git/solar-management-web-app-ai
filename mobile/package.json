@@ -1,0 +1,16 @@
+{
+  "name": "sols-solar-mobile",
+  "version": "1.0.0",
+  "description": "Expo React Native companion for the Solar Management Web App — same REST APIs.",
+  "private": true,
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios"
+  },
+  "dependencies": {
+    "expo": "~51.0.0",
+    "react": "18.2.0",
+    "react-native": "0.74.0"
+  }
+}

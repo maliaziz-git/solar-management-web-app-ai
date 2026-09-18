@@ -1,0 +1,61 @@
+// PostgreSQL-ready schema (Prisma).
+// To switch from the default JSON store to PostgreSQL:
+//   1. `npm i prisma @prisma/client && npx prisma init`
+//   2. Copy this file to prisma/schema.prisma
+//   3. Set DATABASE_URL in .env (see .env.example)
+//   4. `npx prisma migrate dev` then re-implement lib/db.ts with PrismaClient.
+// REST API routes + UI remain unchanged.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  address   String?
+  type      String   @default("Residential")
+  createdAt DateTime @default(now())
+  projects  Project[]
+}
+
+model Project {
+  id         String   @id @default(cuid())
+  name       String
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  address    String?
+  capacityKwp Float
+  panels     Int
+  inverter   String?
+  status     String   @default("Survey")
+  progress   Int      @default(10)
+  installDate DateTime?
+  monthlyKwh Float    @default(0)
+  savingsRm  Float    @default(0)
+  co2Tons    Float    @default(0)
+  health     String   @default("Good")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  tickets    Ticket[]
+}
+
+model Ticket {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  title       String
+  description String?
+  status      String   @default("Open")
+  priority    String   @default("Medium")
+  assignee    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

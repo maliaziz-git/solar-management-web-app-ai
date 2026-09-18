@@ -1,0 +1,35 @@
+[
+  {
+    "id": "tck-001",
+    "projectId": "prj-006",
+    "title": "Inverter clipping at midday",
+    "description": "Customer reports app shows flat peak between 12–2pm. Check string sizing and inverter logs.",
+    "status": "Open",
+    "priority": "High",
+    "assignee": "Aina (Field)",
+    "createdAt": "2026-09-13T02:00:00.000Z",
+    "updatedAt": "2026-09-14T02:00:00.000Z"
+  },
+  {
+    "id": "tck-002",
+    "projectId": "prj-004",
+    "title": "TNB inspection docs missing",
+    "description": "Need single-line diagram + ST cert re-upload before COO.",
+    "status": "In Progress",
+    "priority": "Urgent",
+    "assignee": "Hakim (Projects)",
+    "createdAt": "2026-09-10T02:00:00.000Z",
+    "updatedAt": "2026-09-15T02:00:00.000Z"
+  },
+  {
+    "id": "tck-003",
+    "projectId": "prj-002",
+    "title": "Panel soiling — schedule cleaning",
+    "description": "Generation 8% below expected. Schedule cleaning crew.",
+    "status": "Resolved",
+    "priority": "Medium",
+    "assignee": "Mei (O&M)",
+    "createdAt": "2026-08-28T02:00:00.000Z",
+    "updatedAt": "2026-09-05T02:00:00.000Z"
+  }
+]
