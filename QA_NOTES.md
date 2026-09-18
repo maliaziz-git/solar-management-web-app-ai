@@ -50,6 +50,21 @@ Owner: intern candidate · Date: 2026-09-18 · Method: manual + automated.
 ### 8. Build
 - `npm run build` clean, no TS errors — PASS (verified in CI + locally).
 
+### 9. Topbar title regression (fixed 2026-09-18)
+- Bug: `Topbar.tsx` built the title as `slice(1).charAt(0).toUpperCase() + slice(1)`,
+  doubling the first letter on every page (Pprojects, Ccustomers, Mmonitoring, Ttickets).
+- Fix: capitalize first letter + append remainder; explicit label map so
+  `/tickets` renders "Maintenance" per the sidebar.
+- Verified: `npm run build` clean; visual check on all five routes.
+
+### 10. Vercel readiness (fixed 2026-09-18)
+- Risk: serverless filesystem is read-only, so JSON-store writes and first-run
+  seeding would 500 in production.
+- Fix: `lib/db.ts` keeps an in-memory overlay and warns instead of throwing
+  when disk writes fail. Local disk persistence unchanged.
+- Verified: `npm test` 6/6, `npm run build` clean; demo stays interactive
+  per instance on deploy.
+
 ## Known limitations (honest notes for reviewer)
 - JSON store is single-file; concurrent writes could race — fine for demo, use Postgres for prod.
 - Auth is out of scope for this iteration; next step would be NextAuth + role-based access.
