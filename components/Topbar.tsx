@@ -6,10 +6,17 @@ import { Sun } from "lucide-react";
 
 export function Topbar() {
   const pathname = usePathname();
+  const TITLES: Record<string, string> = {
+    "/": "Dashboard",
+    "/projects": "Projects",
+    "/customers": "Customers",
+    "/monitoring": "Monitoring",
+    "/tickets": "Maintenance",
+  };
+  const slug = pathname.split("/")[1] ?? "";
   const title =
-    pathname === "/"
-      ? "Dashboard"
-      : pathname.slice(1).charAt(0).toUpperCase() + pathname.slice(1);
+    TITLES[pathname] ??
+    (slug ? slug.charAt(0).toUpperCase() + slug.slice(1) : "Dashboard");
   return (
     <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
