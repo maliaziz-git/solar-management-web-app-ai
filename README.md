@@ -1,5 +1,7 @@
 # SOLS Energy — Solar Management Web App
 
+![CI](https://github.com/maliaziz-git/solar-management-web-app-ai/actions/workflows/ci.yml/badge.svg)
+
 Portfolio build for the **Web App Developer Intern** role
 ([job post](https://www.solsenergy.com/careers/web-app-development-intern)).
 
