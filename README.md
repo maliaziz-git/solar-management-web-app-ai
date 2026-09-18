@@ -46,6 +46,16 @@ gh repo create solar-management-web-app --private --source=. --push
 
 Preview deployments: connect the repo to Vercel; every PR gets a URL.
 
+## Deploy on Vercel
+
+No config needed — import the repo at vercel.com/new and deploy.
+PRs get automatic preview deployments via the GitHub integration.
+
+> Note: the default JSON store persists to disk locally, but Vercel's
+> filesystem is read-only, so demo writes there live in memory per
+> instance (see `lib/db.ts`). For persistent production data, switch to
+> PostgreSQL (`prisma/schema.prisma`) or Firebase (`lib/firebase.ts`).
+
 ## QA notes
 
 See `QA_NOTES.md` — what was tested, repro steps, results. CI runs
