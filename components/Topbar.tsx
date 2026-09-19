@@ -3,9 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Sun } from "lucide-react";
+import useSWR from "@/lib/useSWR";
+import { apiClient, type HealthResponse } from "@/lib/api-client";
 
 export function Topbar() {
   const pathname = usePathname();
+  const { data: health } = useSWR<HealthResponse>("/api/health", () =>
+    apiClient.health.get()
+  );
+
   const TITLES: Record<string, string> = {
     "/": "Dashboard",
     "/projects": "Projects",
@@ -17,6 +23,7 @@ export function Topbar() {
   const title =
     TITLES[pathname] ??
     (slug ? slug.charAt(0).toUpperCase() + slug.slice(1) : "Dashboard");
+
   return (
     <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
@@ -34,9 +41,20 @@ export function Topbar() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="badge bg-emerald-100 text-emerald-700">
-            ● All systems normal
-          </span>
+          {health?.ok ? (
+            <div className="flex items-center gap-1.5">
+              <span className="badge bg-emerald-100 text-emerald-700">
+                ● REST API Connected
+              </span>
+              <span className="badge hidden bg-slate-100 text-slate-700 sm:inline-flex">
+                {health.backend === "firebase" ? "🔥 Firebase" : "📁 Local Store"}
+              </span>
+            </div>
+          ) : (
+            <span className="badge bg-amber-100 text-amber-700">
+              ● Connecting to API...
+            </span>
+          )}
           <Link href="/projects" className="btn-accent hidden sm:inline-flex">
             + New project
           </Link>

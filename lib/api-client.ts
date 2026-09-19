@@ -1,22 +1,123 @@
-import type { Customer, SolarProject, Ticket } from "@/lib/types";
+import type { Customer, DashboardMetrics, SolarProject, Ticket } from "@/lib/types";
 
-export async function fetchProjects(): Promise<SolarProject[]> {
-  const res = await fetch("/api/projects", { cache: "no-store" });
-  if (!res.ok) throw new Error("Failed to load projects");
+export interface HealthResponse {
+  ok: boolean;
+  service: string;
+  time: string;
+  backend: "firebase" | "json";
+  firebaseConfigured: boolean;
+}
+
+export class ApiError extends Error {
+  status: number;
+  data?: unknown;
+
+  constructor(message: string, status: number, data?: unknown) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.data = data;
+  }
+}
+
+function getBaseUrl(): string {
+  if (typeof window !== "undefined") {
+    return "";
+  }
+  return (
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.EXPO_PUBLIC_API_URL ||
+    ""
+  );
+}
+
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const url = `${getBaseUrl()}${path}`;
+  const headers = new Headers(options.headers || {});
+
+  if (options.body && typeof options.body === "string" && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  const res = await fetch(url, {
+    ...options,
+    headers,
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    let errorMsg = `Request to ${path} failed with status ${res.status}`;
+    let errorData: unknown;
+    try {
+      errorData = await res.json();
+      if (typeof errorData === "object" && errorData !== null && "error" in errorData) {
+        errorMsg = String((errorData as { error: unknown }).error);
+      }
+    } catch {
+      // Non-JSON response
+    }
+    throw new ApiError(errorMsg, res.status, errorData);
+  }
+
   return res.json();
 }
 
-export async function fetchCustomers(): Promise<Customer[]> {
-  const res = await fetch("/api/customers", { cache: "no-store" });
-  if (!res.ok) throw new Error("Failed to load customers");
-  return res.json();
-}
+export const apiClient = {
+  projects: {
+    list: () => request<SolarProject[]>("/api/projects"),
+    get: (id: string) => request<SolarProject>(`/api/projects/${encodeURIComponent(id)}`),
+    create: (payload: Partial<SolarProject> & { name: string; customerId: string }) =>
+      request<SolarProject>("/api/projects", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+    update: (id: string, payload: Partial<SolarProject>) =>
+      request<SolarProject>(`/api/projects/${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      }),
+    delete: (id: string) =>
+      request<{ ok: boolean }>(`/api/projects/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      }),
+  },
+  customers: {
+    list: () => request<Customer[]>("/api/customers"),
+    create: (payload: Partial<Customer> & { name: string; email: string }) =>
+      request<Customer>("/api/customers", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+  },
+  tickets: {
+    list: () => request<Ticket[]>("/api/tickets"),
+    create: (payload: Partial<Ticket> & { title: string; projectId: string }) =>
+      request<Ticket>("/api/tickets", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+    update: (id: string, payload: Partial<Ticket>) =>
+      request<Ticket>(`/api/tickets/${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      }),
+    delete: (id: string) =>
+      request<{ ok: boolean }>(`/api/tickets/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      }),
+  },
+  metrics: {
+    get: () => request<DashboardMetrics>("/api/metrics"),
+  },
+  health: {
+    get: () => request<HealthResponse>("/api/health"),
+  },
+};
 
-export async function fetchTickets(): Promise<Ticket[]> {
-  const res = await fetch("/api/tickets", { cache: "no-store" });
-  if (!res.ok) throw new Error("Failed to load tickets");
-  return res.json();
-}
+// Backwards-compatible utility functions
+export const fetchProjects = apiClient.projects.list;
+export const fetchCustomers = apiClient.customers.list;
+export const fetchTickets = apiClient.tickets.list;
 
 export function statusColor(status: string): string {
   switch (status) {

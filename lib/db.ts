@@ -1,12 +1,18 @@
 import { promises as fs } from "fs";
 import path from "path";
 import type { Customer, SolarProject, Ticket } from "./types";
+import {
+  isFirebaseConfigured,
+  firestoreGetAll,
+  firestoreSaveAll,
+} from "./firebase";
 
 // ---------------------------------------------------------------------------
 // Pluggable data layer.
 // Default: file-backed JSON store (zero-config demo, works on deploy).
 // Swap to PostgreSQL (Prisma — see prisma/schema.prisma) or Firebase
-// (see lib/firebase.ts) by replacing these functions without touching API/UI.
+// (see lib/firebase.ts) by setting DATA_BACKEND=firebase or configuring
+// Firebase environment variables.
 // ---------------------------------------------------------------------------
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -44,18 +50,79 @@ async function writeJson(file: string, data: unknown): Promise<void> {
   }
 }
 
+function shouldUseFirebase(): boolean {
+  return process.env.DATA_BACKEND === "firebase" || isFirebaseConfigured();
+}
+
 export const store = {
   projects: {
-    all: () => readJson<SolarProject[]>("projects.json", []),
-    save: (rows: SolarProject[]) => writeJson("projects.json", rows),
+    all: async () => {
+      if (shouldUseFirebase()) {
+        try {
+          const rows = await firestoreGetAll<SolarProject>("projects");
+          if (rows.length > 0) return rows;
+        } catch (err) {
+          console.warn("[db] Firestore fetch failed, falling back to JSON:", err);
+        }
+      }
+      return readJson<SolarProject[]>("projects.json", []);
+    },
+    save: async (rows: SolarProject[]) => {
+      if (shouldUseFirebase()) {
+        try {
+          await firestoreSaveAll("projects", rows);
+        } catch (err) {
+          console.warn("[db] Firestore write failed, saving to JSON:", err);
+        }
+      }
+      return writeJson("projects.json", rows);
+    },
   },
   customers: {
-    all: () => readJson<Customer[]>("customers.json", []),
-    save: (rows: Customer[]) => writeJson("customers.json", rows),
+    all: async () => {
+      if (shouldUseFirebase()) {
+        try {
+          const rows = await firestoreGetAll<Customer>("customers");
+          if (rows.length > 0) return rows;
+        } catch (err) {
+          console.warn("[db] Firestore fetch failed, falling back to JSON:", err);
+        }
+      }
+      return readJson<Customer[]>("customers.json", []);
+    },
+    save: async (rows: Customer[]) => {
+      if (shouldUseFirebase()) {
+        try {
+          await firestoreSaveAll("customers", rows);
+        } catch (err) {
+          console.warn("[db] Firestore write failed, saving to JSON:", err);
+        }
+      }
+      return writeJson("customers.json", rows);
+    },
   },
   tickets: {
-    all: () => readJson<Ticket[]>("tickets.json", []),
-    save: (rows: Ticket[]) => writeJson("tickets.json", rows),
+    all: async () => {
+      if (shouldUseFirebase()) {
+        try {
+          const rows = await firestoreGetAll<Ticket>("tickets");
+          if (rows.length > 0) return rows;
+        } catch (err) {
+          console.warn("[db] Firestore fetch failed, falling back to JSON:", err);
+        }
+      }
+      return readJson<Ticket[]>("tickets.json", []);
+    },
+    save: async (rows: Ticket[]) => {
+      if (shouldUseFirebase()) {
+        try {
+          await firestoreSaveAll("tickets", rows);
+        } catch (err) {
+          console.warn("[db] Firestore write failed, saving to JSON:", err);
+        }
+      }
+      return writeJson("tickets.json", rows);
+    },
   },
 };
 
